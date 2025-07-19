@@ -1,0 +1,309 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  color: rgb(0, 0, 0);
+  line-height: 1.5;
+}
+
+.main-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-grid {
+  background-color: rgb(211, 211, 211);
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 20px;
+  padding: 15px 20px;
+  flex-grow: 1;
+}
+
+.sidebar {
+  width: 180px;
+  background-color: rgb(237, 227, 203);
+  padding: 15px 0;
+  user-select: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 20px 15px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  gap: 8px;
+}
+
+.header i {
+  font-size: 1.8rem;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding-left: 10px;
+}
+
+.sidebar-nav li {
+  margin-bottom: 8px;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 1.2rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sidebar-nav a:hover {
+  color: #d0d0d0;
+}
+
+.sidebar-nav i {
+  font-size: 0.9rem;
+}
+
+.navbar-top {
+  background-color: #fff;
+  padding: 8px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: rgb(217, 217, 217);
+  border-radius: 20px;
+  padding: 4px 12px;
+  width: 400px;
+}
+
+.search-bar i {
+  margin-right: 10px;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.search-icon {
+  display: flex;
+  align-items: center;
+}
+
+.search-icon i {
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.user-profile-nav {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.user-profile-nav .avatar {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  object-fit: cover;
+  align-self: flex-end;
+}
+
+.navbar-bottom {
+  background-color: rgb(255, 255, 255);
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid black;
+}
+
+.welcome-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.welcome-card .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.welcome-text span {
+  font-size: 0.8rem;
+  color: black;
+}
+
+.welcome-text h3 {
+  font-size: 1.2rem;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.navbar-bottom-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.btn {
+  padding: 6px 15px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  background-color: rgb(237, 227, 203);
+  color: black;
+}
+
+.btn:hover {
+  background-color: #d0d0d0;
+}
+
+.projects-section {
+  display: flex;
+  flex-direction: column;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.project-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  flex-grow: 1;
+}
+
+.card {
+  background-color: rgb(255, 255, 255);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.project-card {
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.project-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.project-card p {
+  font-size: 0.95rem;
+  color: black;
+  margin-bottom: 10px;
+}
+
+.project-card .card-icons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.project-card .card-icons i {
+  font-size: 1.2rem;
+  color: black;
+}
+
+.card-icons :hover {    
+transform: scale(1.1);
+}
+
+.side-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.announcements-section .announcements-card,
+.trending-section .trending-card {
+  padding: 15px;
+}
+
+.announcement-item {
+  margin-bottom: 15px;
+}
+
+.announcement-item h4 {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.announcement-item p {
+  font-size: 0.85rem;
+  color: black;
+}
+
+.announcement-divider {
+  margin: 15px 0;
+}
+
+.announcement-item:last-child {
+  margin-bottom: 0;
+}
+
+.trending-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.trending-item .avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.trending-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.trending-info .handle {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.trending-info .description {
+  font-size: 0.85rem;
+  color: black;
+}
+
