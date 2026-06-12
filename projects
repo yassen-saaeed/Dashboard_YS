@@ -1,0 +1,711 @@
+import { useEffect, useRef, useCallback } from 'react'
+import { gsap, ScrollTrigger, SplitText } from '../lib/gsap'
+
+interface ProjectsProps {
+    isReady: boolean
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────
+const projects = [
+    {
+        id: 1,
+        number: '01',
+        name: 'Villa du Lac',
+        location: 'Geneva · Lakefront',
+        price: 'CHF 4,200,000',
+        type: 'Residential Villa',
+        year: '2024',
+        beds: 6,
+        sqm: 520,
+        description:
+            'A magnificent lakefront residence offering panoramic views across Lake Geneva, with private dock and manicured gardens designed by a leading Swiss landscape studio.',
+        gradient: 'linear-gradient(145deg, #0a1929 0%, #0d3152 45%, #c9a227 100%)',
+        accentLight: '#c9a227',
+    },
+    {
+        id: 2,
+        number: '02',
+        name: 'Résidence Bellevue',
+        location: 'Zurich · City Center',
+        price: 'CHF 1,850,000',
+        type: 'Premium Apartment',
+        year: '2023',
+        beds: 3,
+        sqm: 180,
+        description:
+            'An exquisite urban residence in the heart of Zurich, combining contemporary design with timeless Swiss craftsmanship and exceptional city views.',
+        gradient: 'linear-gradient(145deg, #12121e 0%, #1e1e38 50%, #b89450 100%)',
+        accentLight: '#b89450',
+    },
+    {
+        id: 3,
+        number: '03',
+        name: 'Chalet Alpina',
+        location: 'Verbier · Alps',
+        price: 'CHF 6,500,000',
+        type: 'Mountain Chalet',
+        year: '2024',
+        beds: 8,
+        sqm: 680,
+        description:
+            'An extraordinary alpine retreat nestled in pristine Verbier mountains, offering ski-in/ski-out access, a wellness spa, and breathtaking summit views.',
+        gradient: 'linear-gradient(145deg, #c8cfd4 0%, #8fa3b0 45%, #3d5a6b 100%)',
+        accentLight: '#3d5a6b',
+    },
+    {
+        id: 4,
+        number: '04',
+        name: 'Penthouse Basel',
+        location: 'Basel · Riverside',
+        price: 'CHF 3,100,000',
+        type: 'Penthouse',
+        year: '2023',
+        beds: 4,
+        sqm: 320,
+        description:
+            'A statement penthouse above the Rhine offering unobstructed river panoramas and architectural interiors conceived for the most discerning residents.',
+        gradient: 'linear-gradient(145deg, #080808 0%, #1c0e08 55%, #7a5040 100%)',
+        accentLight: '#c4845a',
+    },
+    {
+        id: 5,
+        number: '05',
+        name: 'Domaine de Morges',
+        location: 'Morges · Vineyard',
+        price: 'CHF 9,800,000',
+        type: 'Estate',
+        year: '2022',
+        beds: 12,
+        sqm: 1200,
+        description:
+            'A rare grand estate set among working vineyards above Lake Geneva — an unrivalled expression of Swiss country living at the highest level.',
+        gradient: 'linear-gradient(145deg, #130900 0%, #2e1500 55%, #8b6914 100%)',
+        accentLight: '#c4941a',
+    },
+]
+
+const SCROLL_PER_PROJECT = 750
+
+// ── Magnetic CTA ─────────────────────────────────────────────────────────
+function MagneticButton() {
+    const btnRef = useRef<HTMLButtonElement>(null)
+    const textRef = useRef<HTMLSpanElement>(null)
+
+    useEffect(() => {
+        const btn = btnRef.current
+        if (!btn) return
+
+        const onMove = (e: MouseEvent) => {
+            const rect = btn.getBoundingClientRect()
+            const x = e.clientX - rect.left - rect.width / 2
+            const y = e.clientY - rect.top - rect.height / 2
+            gsap.to(btn, { x: x * 0.3, y: y * 0.3, duration: 0.3, ease: 'power1.out' })
+            gsap.to(textRef.current, { x: x * 0.1, y: y * 0.1, duration: 0.3, ease: 'power1.out' })
+        }
+        const onLeave = () => {
+            gsap.to(btn, { x: 0, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.3)' })
+            gsap.to(textRef.current, { x: 0, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.3)' })
+        }
+
+        btn.addEventListener('mousemove', onMove)
+        btn.addEventListener('mouseleave', onLeave)
+        return () => {
+            btn.removeEventListener('mousemove', onMove)
+            btn.removeEventListener('mouseleave', onLeave)
+        }
+    }, [])
+
+    return (
+        <button
+            ref={btnRef}
+            className="relative inline-flex items-center justify-center px-10 py-4 rounded-[2px] overflow-hidden group"
+            style={{
+                border: '1px solid var(--color-gold)',
+                backgroundColor: 'transparent',
+                willChange: 'transform',
+            }}
+            aria-label="Browse all properties"
+        >
+            {/* Fill on hover */}
+            <span
+                className="absolute inset-0 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"
+                style={{ backgroundColor: 'var(--color-gold)', transitionTimingFunction: 'var(--ease-luxury)' }}
+                aria-hidden="true"
+            />
+            <span
+                ref={textRef}
+                className="relative uppercase tracking-[0.3em] text-[12px] transition-colors duration-300"
+                style={{
+                    fontFamily: 'var(--font-body)',
+                    color: 'var(--color-gold)',
+                    willChange: 'transform',
+                }}
+            >
+                Browse All Properties
+            </span>
+        </button>
+    )
+}
+
+// ── Section ───────────────────────────────────────────────────────────────
+export default function Projects({ isReady }: ProjectsProps) {
+    const sectionRef = useRef<HTMLElement>(null)
+    const headerRef = useRef<HTMLDivElement>(null)
+    const eyebrowRef = useRef<HTMLParagraphElement>(null)
+    const headlineRef = useRef<HTMLHeadingElement>(null)
+    const sliderRef = useRef<HTMLDivElement>(null)
+    const imageRefs = useRef<(HTMLDivElement | null)[]>([])
+    const innerImgRefs = useRef<(HTMLDivElement | null)[]>([])
+    const infoRefs = useRef<(HTMLDivElement | null)[]>([])
+    const counterNumRef = useRef<HTMLSpanElement>(null)
+    const progressRef = useRef<HTMLDivElement>(null)
+    const navDotsRef = useRef<(HTMLButtonElement | null)[]>([])
+    const activeIndexRef = useRef(0)
+    const ctaRef = useRef<HTMLDivElement>(null)
+
+    // ── Transition logic ────────────────────────────────────────────────────
+    const transitionTo = useCallback((from: number, to: number) => {
+        if (from === to) return
+        const fromImg = imageRefs.current[from]
+        const toImg = imageRefs.current[to]
+        const fromInner = innerImgRefs.current[from]
+        const toInner = innerImgRefs.current[to]
+        const fromInfo = infoRefs.current[from]
+        const toInfo = infoRefs.current[to]
+
+        // Kill in-flight tweens on the affected elements
+        if (fromImg) gsap.killTweensOf(fromImg)
+        if (toImg) gsap.killTweensOf(toImg)
+        if (fromInfo) gsap.killTweensOf(fromInfo.querySelectorAll('.info-item'))
+        if (toInfo) gsap.killTweensOf(toInfo.querySelectorAll('.info-item'))
+
+        // Image: outgoing fades + slight zoom
+        if (fromImg) gsap.to(fromImg, { opacity: 0, duration: 0.65, ease: 'power2.inOut', zIndex: 1 })
+        if (fromInner) gsap.to(fromInner, { scale: 1.06, duration: 0.65, ease: 'power2.inOut' })
+
+        // Image: incoming reveals with inverse scale
+        if (toImg) {
+            gsap.set(toImg, { opacity: 0, zIndex: 2 })
+            gsap.to(toImg, { opacity: 1, duration: 0.65, ease: 'power2.inOut' })
+        }
+        if (toInner) {
+            gsap.set(toInner, { scale: 1.08 })
+            gsap.to(toInner, { scale: 1, duration: 0.9, ease: 'power2.out' })
+        }
+
+        // Info: outgoing
+        if (fromInfo) {
+            const dir = to > from ? -1 : 1
+            gsap.to(fromInfo.querySelectorAll('.info-item'), {
+                y: dir * -25,
+                opacity: 0,
+                stagger: 0.03,
+                duration: 0.28,
+                ease: 'power2.in',
+                onComplete: () => gsap.set(fromInfo, { zIndex: 0 }),
+            })
+        }
+
+        // Info: incoming
+        if (toInfo) {
+            const dir = to > from ? 1 : -1
+            gsap.set(toInfo, { zIndex: 1 })
+            gsap.fromTo(
+                toInfo.querySelectorAll('.info-item'),
+                { y: dir * 35, opacity: 0 },
+                { y: 0, opacity: 1, stagger: 0.06, duration: 0.65, delay: 0.18, ease: 'power3.out' }
+            )
+        }
+
+        // Counter
+        if (counterNumRef.current) {
+            gsap.to(counterNumRef.current, {
+                opacity: 0, y: -8, duration: 0.15, onComplete: () => {
+                    if (counterNumRef.current) {
+                        counterNumRef.current.textContent = projects[to].number
+                        gsap.to(counterNumRef.current, { opacity: 1, y: 0, duration: 0.25 })
+                    }
+                },
+            })
+        }
+
+        // Nav dots
+        navDotsRef.current.forEach((dot, i) => {
+            if (!dot) return
+            dot.style.backgroundColor = i === to ? 'var(--color-gold)' : 'transparent'
+            dot.style.borderColor = i === to ? 'var(--color-gold)' : '#4b5563'
+        })
+
+        activeIndexRef.current = to
+    }, [])
+
+    // ── Keyboard navigation ─────────────────────────────────────────────────
+    useEffect(() => {
+        if (!isReady) return
+        const onKey = (e: KeyboardEvent) => {
+            const slider = sliderRef.current
+            if (!slider) return
+            const rect = slider.getBoundingClientRect()
+            // Only intercept when the pinned section is in the viewport
+            if (rect.top > 10 || rect.top < -10) return
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                const next = Math.min(projects.length - 1, activeIndexRef.current + 1)
+                transitionTo(activeIndexRef.current, next)
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                const prev = Math.max(0, activeIndexRef.current - 1)
+                transitionTo(activeIndexRef.current, prev)
+            }
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [isReady, transitionTo])
+
+    // ── Scroll trigger — pinned slider ──────────────────────────────────────
+    useEffect(() => {
+        if (!isReady || !sliderRef.current) return
+        const isMobile = window.matchMedia('(max-width: 768px)').matches
+        if (isMobile) return
+
+        // Set initial DOM state
+        imageRefs.current.forEach((img, i) => {
+            if (img) gsap.set(img, { opacity: i === 0 ? 1 : 0, zIndex: i === 0 ? 2 : 0 })
+        })
+        innerImgRefs.current.forEach((inner) => {
+            if (inner) gsap.set(inner, { scale: 1 })
+        })
+        infoRefs.current.forEach((info, i) => {
+            if (!info) return
+            const items = info.querySelectorAll('.info-item')
+            gsap.set(items, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 35 })
+            gsap.set(info, { zIndex: i === 0 ? 1 : 0 })
+        })
+        navDotsRef.current.forEach((dot, i) => {
+            if (!dot) return
+            dot.style.backgroundColor = i === 0 ? 'var(--color-gold)' : 'transparent'
+            dot.style.borderColor = i === 0 ? 'var(--color-gold)' : '#4b5563'
+        })
+
+        const ctx = gsap.context(() => {
+            ScrollTrigger.create({
+                trigger: sliderRef.current,
+                pin: true,
+                pinSpacing: true,
+                start: 'top top',
+                end: `+=${projects.length * SCROLL_PER_PROJECT}`,
+                scrub: 1,
+                onUpdate: (self) => {
+                    // Progress bar
+                    if (progressRef.current) {
+                        progressRef.current.style.transform = `scaleX(${self.progress})`
+                    }
+
+                    const raw = self.progress * projects.length
+                    const newIndex = Math.min(projects.length - 1, Math.floor(raw))
+
+                    if (newIndex !== activeIndexRef.current) {
+                        transitionTo(activeIndexRef.current, newIndex)
+                    }
+                },
+            })
+        }, sliderRef)
+
+        return () => ctx.revert()
+    }, [isReady, transitionTo])
+
+    // ── Header entrance ──────────────────────────────────────────────────────
+    useEffect(() => {
+        if (!isReady || !eyebrowRef.current || !headlineRef.current) return
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+        const ctx = gsap.context(() => {
+            if (prefersReduced) {
+                gsap.set([eyebrowRef.current, headlineRef.current], { opacity: 1 })
+                return
+            }
+
+            gsap.from(eyebrowRef.current, {
+                x: -20, opacity: 0, duration: 0.8, ease: 'power2.out',
+                scrollTrigger: { trigger: headerRef.current, start: 'top 85%' },
+            })
+
+            const split = new SplitText(headlineRef.current!, { type: 'lines' })
+            gsap.from(split.lines, {
+                y: 50, opacity: 0, stagger: 0.15, duration: 1.1, ease: 'power3.out',
+                scrollTrigger: { trigger: headerRef.current, start: 'top 85%' },
+            })
+        }, headerRef)
+
+        return () => ctx.revert()
+    }, [isReady])
+
+    // ── CTA entrance ─────────────────────────────────────────────────────────
+    useEffect(() => {
+        if (!isReady || !ctaRef.current) return
+        gsap.from(ctaRef.current, {
+            opacity: 0, y: 30, duration: 0.9, ease: 'power2.out',
+            scrollTrigger: { trigger: ctaRef.current, start: 'top 90%' },
+        })
+    }, [isReady])
+
+    return (
+        <section
+            id="scene-5"
+            ref={sectionRef}
+            style={{ backgroundColor: '#FFFFFF' }}
+        >
+            {/* ── Header ──────────────────────────────────────────────────────── */}
+            <div
+                ref={headerRef}
+                className="px-8 md:px-16 lg:px-24 pt-24 pb-16"
+            >
+                <p
+                    ref={eyebrowRef}
+                    className="uppercase tracking-[0.4em] text-[11px] mb-5"
+                    style={{ fontFamily: 'var(--font-body)', color: 'var(--color-gold)' }}
+                >
+                    Our Portfolio
+                </p>
+                <h2
+                    ref={headlineRef}
+                    className="font-light leading-[1.1] max-w-2xl"
+                    style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 'clamp(36px, 5vw, 64px)',
+                        color: 'var(--color-dark)',
+                    }}
+                >
+                    Exceptional Properties<br />Across Switzerland.
+                </h2>
+            </div>
+
+            {/* ── Desktop pinned slider ────────────────────────────────────────── */}
+            <div
+                ref={sliderRef}
+                className="hidden md:block relative w-full overflow-hidden"
+                style={{ height: '100vh' }}
+                aria-label="Property portfolio slider"
+            >
+                {/* Image column */}
+                <div
+                    className="absolute left-0 top-0 bottom-0 drag-area"
+                    style={{ width: '58%' }}
+                >
+                    {projects.map((p, i) => (
+                        <div
+                            key={p.id}
+                            ref={(el) => { imageRefs.current[i] = el }}
+                            className="absolute inset-0"
+                            style={{ zIndex: 0 }}
+                            aria-hidden="true"
+                        >
+                            {/* Inner div for independent scale animation */}
+                            <div
+                                ref={(el) => { innerImgRefs.current[i] = el }}
+                                className="absolute inset-0"
+                                style={{ background: p.gradient, transformOrigin: 'center center' }}
+                            />
+                            {/* Subtle texture overlay */}
+                            <div
+                                className="absolute inset-0 mix-blend-overlay opacity-[0.06]"
+                                style={{
+                                    backgroundImage:
+                                        'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
+                                    backgroundSize: '200px',
+                                }}
+                            />
+                            {/* Property type badge */}
+                            <div
+                                className="absolute top-8 left-8 px-3 py-1.5 text-[10px] uppercase tracking-[0.3em]"
+                                style={{
+                                    fontFamily: 'var(--font-body)',
+                                    color: p.accentLight,
+                                    border: `1px solid ${p.accentLight}`,
+                                    backgroundColor: 'rgba(0,0,0,0.3)',
+                                    backdropFilter: 'blur(4px)',
+                                }}
+                            >
+                                {p.type}
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* Progress bar at bottom of image column */}
+                    <div
+                        className="absolute bottom-0 left-0 right-0 h-[2px] z-10"
+                        style={{ backgroundColor: 'rgba(212,175,55,0.15)' }}
+                    >
+                        <div
+                            ref={progressRef}
+                            className="h-full origin-left"
+                            style={{ backgroundColor: 'var(--color-gold)', transform: 'scaleX(0)', willChange: 'transform' }}
+                        />
+                    </div>
+                </div>
+
+                {/* Info column */}
+                <div
+                    className="absolute right-0 top-0 bottom-0 flex items-center"
+                    style={{ width: '42%', backgroundColor: '#FFFFFF' }}
+                >
+                    {projects.map((p, i) => (
+                        <div
+                            key={p.id}
+                            ref={(el) => { infoRefs.current[i] = el }}
+                            className="absolute inset-0 flex flex-col justify-center px-10 lg:px-14 xl:px-16"
+                            style={{ zIndex: 0 }}
+                        >
+                            {/* Project number */}
+                            <div
+                                className="info-item mb-8 text-[11px] uppercase tracking-[0.4em]"
+                                style={{ fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}
+                            >
+                                {p.number} &nbsp;/&nbsp; 05
+                            </div>
+
+                            {/* Name */}
+                            <h3
+                                className="info-item leading-[1.05] mb-3"
+                                style={{
+                                    fontFamily: 'var(--font-display)',
+                                    fontSize: 'clamp(30px, 3.2vw, 48px)',
+                                    color: 'var(--color-dark)',
+                                    fontWeight: 300,
+                                }}
+                            >
+                                {p.name}
+                            </h3>
+
+                            {/* Location */}
+                            <p
+                                className="info-item uppercase tracking-[0.25em] text-[11px] mb-6"
+                                style={{ fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}
+                            >
+                                {p.location}
+                            </p>
+
+                            {/* Divider */}
+                            <div
+                                className="info-item mb-6 w-10 h-px"
+                                style={{ backgroundColor: 'var(--color-gold)' }}
+                                aria-hidden="true"
+                            />
+
+                            {/* Description */}
+                            <p
+                                className="info-item text-[14px] leading-[1.75] mb-8 max-w-xs"
+                                style={{ fontFamily: 'var(--font-body)', color: '#4B5563' }}
+                            >
+                                {p.description}
+                            </p>
+
+                            {/* Meta row */}
+                            <div className="info-item flex items-center gap-6 mb-8">
+                                <div>
+                                    <div
+                                        className="text-[11px] uppercase tracking-[0.2em] mb-1"
+                                        style={{ fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}
+                                    >
+                                        Bedrooms
+                                    </div>
+                                    <div
+                                        className="text-[20px] font-light"
+                                        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-dark)' }}
+                                    >
+                                        {p.beds}
+                                    </div>
+                                </div>
+                                <div
+                                    className="w-px h-8 self-center"
+                                    style={{ backgroundColor: 'var(--color-gold)', opacity: 0.4 }}
+                                    aria-hidden="true"
+                                />
+                                <div>
+                                    <div
+                                        className="text-[11px] uppercase tracking-[0.2em] mb-1"
+                                        style={{ fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}
+                                    >
+                                        Surface
+                                    </div>
+                                    <div
+                                        className="text-[20px] font-light"
+                                        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-dark)' }}
+                                    >
+                                        {p.sqm} m²
+                                    </div>
+                                </div>
+                                <div
+                                    className="w-px h-8 self-center"
+                                    style={{ backgroundColor: 'var(--color-gold)', opacity: 0.4 }}
+                                    aria-hidden="true"
+                                />
+                                <div>
+                                    <div
+                                        className="text-[11px] uppercase tracking-[0.2em] mb-1"
+                                        style={{ fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}
+                                    >
+                                        Year
+                                    </div>
+                                    <div
+                                        className="text-[20px] font-light"
+                                        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-dark)' }}
+                                    >
+                                        {p.year}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Price */}
+                            <div
+                                className="info-item text-[15px] font-semibold tracking-wide mb-8"
+                                style={{ fontFamily: 'var(--font-body)', color: 'var(--color-gold)' }}
+                            >
+                                {p.price}
+                            </div>
+
+                            {/* CTA */}
+                            <a
+                                className="info-item inline-flex items-center gap-3 group w-fit"
+                                href="#"
+                                aria-label={`View property: ${p.name}`}
+                            >
+                                <span
+                                    className="uppercase tracking-[0.3em] text-[11px]"
+                                    style={{ fontFamily: 'var(--font-body)', color: 'var(--color-dark)' }}
+                                >
+                                    View Property
+                                </span>
+                                <span
+                                    className="w-8 h-px relative overflow-hidden"
+                                    style={{ backgroundColor: 'var(--color-dark)' }}
+                                    aria-hidden="true"
+                                >
+                                    <span
+                                        className="absolute inset-0 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+                                        style={{ backgroundColor: 'var(--color-gold)', transitionTimingFunction: 'var(--ease-luxury)' }}
+                                    />
+                                </span>
+                            </a>
+                        </div>
+                    ))}
+
+                    {/* Dot navigation */}
+                    <div
+                        className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2.5"
+                        role="tablist"
+                        aria-label="Project navigation"
+                    >
+                        {projects.map((p, i) => (
+                            <button
+                                key={p.id}
+                                ref={(el) => { navDotsRef.current[i] = el }}
+                                className="w-2 h-2 rounded-full transition-all duration-300"
+                                style={{ border: '1px solid #4b5563', backgroundColor: 'transparent' }}
+                                onClick={() => transitionTo(activeIndexRef.current, i)}
+                                aria-label={`Go to ${p.name}`}
+                                role="tab"
+                            />
+                        ))}
+                    </div>
+
+                    {/* Counter (top right of info panel) */}
+                    <div
+                        className="absolute top-8 right-14 text-[11px] tracking-[0.3em] uppercase flex items-center gap-1"
+                        style={{ fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}
+                        aria-live="polite"
+                        aria-atomic="true"
+                    >
+                        <span ref={counterNumRef}>01</span>
+                        <span style={{ opacity: 0.4 }}>&nbsp;/ 05</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Mobile: vertical stack ───────────────────────────────────────── */}
+            <div className="md:hidden flex flex-col gap-8 px-6 pb-16">
+                {projects.map((p) => (
+                    <article
+                        key={p.id}
+                        className="rounded-[2px] overflow-hidden"
+                        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}
+                    >
+                        {/* Image placeholder */}
+                        <div
+                            className="w-full"
+                            style={{ aspectRatio: '4/3', background: p.gradient }}
+                            aria-hidden="true"
+                        >
+                            <div
+                                className="w-full h-full flex items-end p-4"
+                            >
+                                <span
+                                    className="px-2 py-1 text-[10px] uppercase tracking-[0.25em]"
+                                    style={{
+                                        fontFamily: 'var(--font-body)',
+                                        color: p.accentLight,
+                                        border: `1px solid ${p.accentLight}`,
+                                        backgroundColor: 'rgba(0,0,0,0.35)',
+                                    }}
+                                >
+                                    {p.type}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="p-6 bg-white">
+                            <p
+                                className="uppercase tracking-[0.2em] text-[10px] mb-2"
+                                style={{ fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}
+                            >
+                                {p.location}
+                            </p>
+                            <h3
+                                className="font-light mb-3 leading-tight"
+                                style={{
+                                    fontFamily: 'var(--font-display)',
+                                    fontSize: 26,
+                                    color: 'var(--color-dark)',
+                                }}
+                            >
+                                {p.name}
+                            </h3>
+                            <p
+                                className="text-[13px] leading-[1.7] mb-4"
+                                style={{ fontFamily: 'var(--font-body)', color: '#6b7280' }}
+                            >
+                                {p.description}
+                            </p>
+                            <div className="flex items-center justify-between">
+                                <span
+                                    className="text-[14px] font-semibold"
+                                    style={{ fontFamily: 'var(--font-body)', color: 'var(--color-gold)' }}
+                                >
+                                    {p.price}
+                                </span>
+                                <a
+                                    href="#"
+                                    className="uppercase tracking-[0.25em] text-[10px]"
+                                    style={{ fontFamily: 'var(--font-body)', color: 'var(--color-dark)' }}
+                                    aria-label={`View property: ${p.name}`}
+                                >
+                                    View →
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                ))}
+            </div>
+
+            {/* ── CTA ──────────────────────────────────────────────────────────── */}
+            <div
+                ref={ctaRef}
+                className="flex justify-center py-20 md:py-28"
+                style={{ backgroundColor: '#FFFFFF' }}
+            >
+                <MagneticButton />
+            </div>
+        </section>
+    )
+}
+ 
